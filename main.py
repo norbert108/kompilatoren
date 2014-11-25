@@ -6,24 +6,36 @@ parser = Grammar(r"""
 
 @start: expression ;
 
-?expression: declaration | if | print ;
+@expression: function_call | declaration | if | print ;
 
-type: 'int' | 'float' | 'string' ;
 identifier: '\w+' ;
+type: 'int' | 'float' | 'string' ;
+value: '\d+' | '"\w+"' ;
 
-parameter_list: '\(' variable (',' variable)* '\)' ;
+parameter_list: '\(' variable? (',' variable)* '\)' ;
+arguments_list: '\(' (value)* '\)' ;
 
-function: type identifier parameter_list ;
+assign: identifier '=' value | variable '=' value;
+
+function_body: '\{' (expression)* '\}' ;
+function_call: identifier arguments_list ';' expression? ;
+function_def: type identifier parameter_list function_body ;
+
 variable: type identifier ;
 
-@declaration: function | variable ;
+declaration: (function_def | (type (identifier | assign) (',' (identifier | assign))* ';')) expression? ;
 
 SPACES: '[ ]+' (%ignore) ;
+WS: '[ \t\n]+' (%ignore) (%newline);
 
 if: 'if' ;
 print: 'print' ;
 
 """)
 
-result = parser.parse("int go(int hhe, float lel)")
+result = parser.parse("""
+int urmom = 0, iii;
+int twojastara(int zapierdala){}
+tytytyt();
+""")
 print result
