@@ -1,13 +1,11 @@
-__author__ = 'norbert'
-
 from plyplus import Grammar
+from plyplus import ParseError
 
 parser = Grammar(r"""
 
 @start: expression ;
 
 @expression: function_call | cond_expr | loop | control_instr | print | return | arytm_expression | function_def | assign_c | declaration ;
-
 
 type: 'int' | 'float' | 'string' ;
 if: 'if ' ;
@@ -50,7 +48,7 @@ WS: '[ \t\n]+' (%ignore) (%newline);
 
 """)
 
-result = parser.parse("""
+code_to_parse = """
 float a = 0, b = 0, c = 0;
 
 int gcd(int m, int n) {
@@ -72,5 +70,10 @@ return res;
 while(a >= b ) {
     a = 12*(a+ba);
 }
-""").pretty()
-print result
+"""
+
+try:
+    result = parser.parse(code_to_parse).pretty()
+    print result
+except ParseError as e:
+    print e.message.splitlines()[0]
