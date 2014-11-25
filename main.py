@@ -20,9 +20,10 @@ arytm_operator:  '\+' | '\*'  ;
 identifier: '\w+' ;
 number: '\d+' ;
 value: number | '"\w+"' ;
-control_instr: ('break' | 'continue') ';' expression? ;
-return: 'return' (value | identifier | function_call ) ';' expression? ;
-print: 'print' (value | identifier | function_call )+ ';' expression? ;
+
+control_instr: ('break' | 'continue') expression? ;
+return: 'return' (value | identifier | function_call | arytm_expression) expression? ;
+print: 'print' (value | identifier | function_call | arytm_expression )+ expression? ;
 
 assign: identifier '=' (function_call | value | identifier | arytm_expression ) expression? ;
 code_block: '\{' (expression)* '\}' ;
@@ -34,12 +35,12 @@ condition: '\(' ( identifier | identifier rel_operator identifier ) (bin_operato
 arytm_expression: (((number | identifier | arytm_expression) arytm_operator (number | identifier | arytm_expression)+ ) | '\(' arytm_expression '\)' ) expression? ;
 cond_expr: if condition (code_block | expression) (else (code_block | expression) )? expression? ;
 loop: (while condition code_block | repeat code_block until condition) expression? ;
-function_call: identifier arguments_list ';' expression? ;
+function_call: identifier arguments_list expression? ;
 function_def: type identifier parameter_list code_block expression?;
 
 variable: type identifier ;
 
-declaration: type (assign | identifier) (',' (assign | identifier))* ';' expression? ;
+declaration: type (assign | identifier) (',' (assign | identifier))* expression? ;
 
 SPACES: '[ ]+' (%ignore) ;
 WS: '[ \t\n]+' (%ignore) (%newline);
@@ -47,18 +48,18 @@ WS: '[ \t\n]+' (%ignore) (%newline);
 """)
 
 result = parser.parse("""
-float a = 0, b = 0, c = 0;
+float a = 0, b = 0, c = 0
 
 int gcd(int m, int n) {
 
-int res = 0;
+int res = 0
 if (m!=n) {
     if (m > n)
-        res = gcd(m+n, n);
+        res = gcd(m+n, n)
     else
-        res = gcd(n+m, m);
+        res = gcd(n+m, m)
         xD =dd
-        int kurwa = tu, powinno, rzucac, bledem ;
+        int kurwa = tu, powinno, rzucac, bledem
         lol = w
         sumie = to
         nie = xD
@@ -66,8 +67,8 @@ if (m!=n) {
 else{
     res = m
 }
-print res;
-return res;
+print res
+return res
 }
 
 while(a >= b ) {
