@@ -6,20 +6,27 @@ parser = Grammar(r"""
 
 @start: expression ;
 
-@expression: function_call | declaration | if | print ;
+@expression: function_call | cond_expr | declaration ;
 
-identifier: '\w+' ;
 type: 'int' | 'float' | 'string' ;
+if: 'if ' ;
+else: 'else ' ;
+rel_operator: '<' | '>' | '<=' | '>=' | '==' ;
+bin_operator: '\|\|' | '\&\&' ;
+identifier: '\w+' ;
 value: '\d+' | '"\w+"' ;
+
+assign: identifier '=' value | variable '=' value ;
+code_block: '\{' (expression)* '\}' ;
 
 parameter_list: '\(' variable? (',' variable)* '\)' ;
 arguments_list: '\(' (value)* '\)' ;
+condition: '\(' ( identifier | identifier rel_operator identifier ) (bin_operator condition)* '\)' ;
 
-assign: identifier '=' value | variable '=' value;
-
-function_body: '\{' (expression)* '\}' ;
+cond_expr: if condition code_block (else condition code_block)? expression? ;
 function_call: identifier arguments_list ';' expression? ;
-function_def: type identifier parameter_list function_body ;
+function_def: type identifier parameter_list code_block ;
+
 
 variable: type identifier ;
 
@@ -28,14 +35,14 @@ declaration: (function_def | (type (identifier | assign) (',' (identifier | assi
 SPACES: '[ ]+' (%ignore) ;
 WS: '[ \t\n]+' (%ignore) (%newline);
 
-if: 'if' ;
-print: 'print' ;
-
 """)
 
-result = parser.parse("""
-int urmom = 0, iii;
-int twojastara(int zapierdala){}
-tytytyt();
+result = parser.parse("""if(dd > kk) {} else (dD) {}
 """)
 print result
+
+#
+
+# condition: '\(' ( identifier | identifier relation identifier ) (bin_operator condition)* '\)' ;
+# rel_operator: '<' | '>' | '<=' | '>=' | '==' ;
+# ('else if' condition code_block)* (else condition code_block)?
