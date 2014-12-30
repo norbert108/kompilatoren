@@ -1,79 +1,28 @@
-from plyplus import Grammar
-from plyplus import ParseError
+import sys
+import ply.yacc as yacc
+# from Cparser import Cparser
 
-parser = Grammar(r"""
+from scanner import Scanner
 
-@start: expression ;
+if __name__ == '__main__':
 
-@expression: function_call | cond_expr | loop | control_instr | print | return | arytm_expression | function_def | assign_c | declaration ;
+    try:
+        filename = sys.argv[1] if len(sys.argv) > 1 else "example.txt"
+        file = open(filename, "r")
+    except IOError:
+        print("Cannot open {0} file".format(filename))
+        sys.exit(0)
 
-type: 'int' | 'float' | 'string' ;
-if: 'if ' ;
-else: 'else' ;
-while: 'while' ;
-repeat: 'repeat' ;
-until: 'until' ;
-arytm_operator: '\+' | '\*' ;
-rel_operator: '<' | '>' | '<=' | '>=' | '==' | '!=' ;
-bin_operator: '\|\|' | '\&\&' ;
-identifier: '\w+' ;
+    # Cparser = Cparser()
+    # parser = yacc.yacc(module=Cparser)
+    text = file.read()
+    # parser.parse(text, lexer=Cparser.scanner)
+    lexer = Scanner()
+    lexer.input(text)
 
-number: '\d+' ;
-value: number | '"\w+"' ;
-
-control_instr: ('break' | 'continue') expression? ;
-return: 'return' (value | identifier | function_call | arytm_expression) ';' expression? ;
-print: 'print' (value | identifier | function_call | arytm_expression )+ ';' expression? ;
-
-assign: identifier '=' (function_call | value | identifier | arytm_expression ) expression? ;
-assign_c: assign ';' ;
-code_block: '\{' (expression)* '\}' ;
-
-parameter_list: '\(' variable? (',' variable)* '\)' ;
-arguments_list: '\(' (value | arytm_expression | identifier)? (',' (value | arytm_expression | identifier))* '\)' ;
-condition: '\(' ( identifier | identifier rel_operator identifier ) (bin_operator ( identifier | identifier rel_operator identifier ) | condition)* '\)' ;
-
-arytm_expression: (((number | identifier | arytm_expression) arytm_operator (number | identifier | arytm_expression)+ ) | '\(' arytm_expression '\)' ) expression? ;
-cond_expr: if condition (code_block | expression) (else (code_block | expression) )? expression? ;
-loop: (while condition code_block | repeat code_block until condition) expression? ;
-function_call: identifier arguments_list expression? ;
-function_def: type identifier parameter_list code_block expression?;
-
-variable: type identifier ;
-
-declaration: type (assign | identifier) (',' (assign | identifier))* ';' expression? ;
-
-SPACES: '[ ]+' (%ignore) ;
-WS: '[ \t\n]+' (%ignore) (%newline);
-
-""")
-
-code_to_parse = """
-float a = 0, b = 0, c = 0;
-
-int gcd(int m, int n) {
-
-int res = 0;
-if (m!=n && a) {
-    if (m > n)
-        res = gcd(m+n, n);
-    else
-        res = gcd(n+m, m);
-}
-else
-    res = m;
-
-print res;
-return res;
-}
-
-while(a >= b ) {
-    a = 12*(a+ba);
-}
-"""
-
-try:
-    result = parser.parse(code_to_parse).pretty()
-    print result
-except ParseError as e:
-    print e.message.splitlines()[0]
+    # tokenize
+    while True:
+        tok = lexer.token()
+        if not tok:
+            break
+        print tok.type, tok.value, tok.lineno, tok.lexpos
