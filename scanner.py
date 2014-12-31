@@ -1,6 +1,5 @@
-__author__ = 'NorbertZabujcaSmokuw'
-
 import ply.lex as lex
+
 
 class Scanner(object):
     def __init__(self):

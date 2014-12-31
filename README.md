@@ -1,1 +1,1 @@
-Parser prostego jezyka z wykorzystaniem PlyPlus
+Parser prostego jezyka z wykorzystaniem Ply

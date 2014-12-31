@@ -1,8 +1,9 @@
 import sys
-import ply.yacc as yacc
+# import ply.yacc as yacc
 # from Cparser import Cparser
 
 from scanner import Scanner
+# from Cparser import Parser
 
 if __name__ == '__main__':
 
@@ -26,3 +27,5 @@ if __name__ == '__main__':
         if not tok:
             break
         print tok.type, tok.value, tok.lineno, tok.lexpos
+
+    # Parser()
