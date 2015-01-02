@@ -1,6 +1,7 @@
 
 float a = 0, b = 0, c = 0;
-float d = "asdasds";
+int d = "asdasds";
+float a = 0;
 
 float sdasda(){
 	float abc = 0;

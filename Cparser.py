@@ -1,5 +1,5 @@
 from scanner import Scanner
-import ast as AST
+import AST
 
 
 class Cparser(object):
@@ -65,7 +65,7 @@ class Cparser(object):
 
     def p_init(self, p):
         """init : ID '=' expression """
-        p[0] = AST.Init(p[1], p[3])
+        p[0] = AST.Init(p[1], p[3], line_no=p.lineno(2))
 
     def p_instructions(self, p):
         """instructions : instructions instruction

@@ -1,9 +1,9 @@
 import sys
 import ply.yacc as yacc
-import TreePrinter
 
-from scanner import Scanner
+import TreePrinter
 from Cparser import Cparser
+from TypeChecker import TypeChecker
 
 if __name__ == '__main__':
 
@@ -19,4 +19,6 @@ if __name__ == '__main__':
     text = file.read()
     ast = parser.parse(text, lexer=Cparser.scanner)
 
-    print ast
+    # print ast
+    type_checker = TypeChecker()
+    type_checker.visit(ast)

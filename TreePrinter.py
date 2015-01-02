@@ -1,4 +1,4 @@
-import ast as AST
+import AST
 
 
 def addToClass(cls):
