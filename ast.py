@@ -29,9 +29,11 @@ class Declarations(Node):
 
 
 class Init(Node):
-    def __init__(self, id=None, expression=None):
+    def __init__(self, id=None, expression=None, line_no=None, column_no=None):
         self.id = id
         self.expression = expression
+        self.line_no = line_no
+        self.column_no = column_no
 
 
 class Inits(Node):
@@ -148,10 +150,11 @@ class IdExpression(Expression):
 
 
 class BinaryExpression(Expression):
-    def __init__(self, left, op, right):
+    def __init__(self, left, op, right, line_no=None):
         self.left = left
         self.op = op
         self.right = right
+        self.line_no = line_no
 
 
 class InsideExpression(Expression):

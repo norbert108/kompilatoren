@@ -22,3 +22,5 @@ if __name__ == '__main__':
     # print ast
     type_checker = TypeChecker()
     type_checker.visit(ast)
+
+    # print ast
