@@ -1,9 +1,9 @@
 import sys
-# import ply.yacc as yacc
-# from Cparser import Cparser
+import ply.yacc as yacc
+import TreePrinter
 
 from scanner import Scanner
-# from Cparser import Parser
+from Cparser import Cparser
 
 if __name__ == '__main__':
 
@@ -14,18 +14,9 @@ if __name__ == '__main__':
         print("Cannot open {0} file".format(filename))
         sys.exit(0)
 
-    # Cparser = Cparser()
-    # parser = yacc.yacc(module=Cparser)
+    Cparser = Cparser()
+    parser = yacc.yacc(module=Cparser)
     text = file.read()
-    # parser.parse(text, lexer=Cparser.scanner)
-    lexer = Scanner()
-    lexer.input(text)
+    ast = parser.parse(text, lexer=Cparser.scanner)
 
-    # tokenize
-    while True:
-        tok = lexer.token()
-        if not tok:
-            break
-        print tok.type, tok.value, tok.lineno, tok.lexpos
-
-    # Parser()
+    print ast
