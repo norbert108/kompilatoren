@@ -1,11 +1,10 @@
 
-float a = (2 * (2 + ("xD" * "Dx"))) + 2, b = 0, c = 0;
-int d = asdasds;
-float a = 0;
+float a = (2 * (2 + ("xD" * "Dx"))) + 2, c = 0, d;
+int dupa = 0;
+string b = dupa;
 
 float sdasda(){
 	float abc = 0;
-    int fff;
 
 	fff = 0;
 	return abs;
@@ -36,5 +35,5 @@ while(a >= b ) {
     a = 1/2*(a+b/a);
 }
 
-d = 7;
+d: d = 7;
 ddd = 909;

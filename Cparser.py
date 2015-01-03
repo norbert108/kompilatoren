@@ -115,7 +115,7 @@ class Cparser(object):
 
     def p_labeled_instr(self, p):
         """labeled_instr : ID ':' instruction """
-        p[0] = ast.LabeledInstr(p[1], p[3])
+        p[0] = ast.LabeledInstr(p[1], p[3], p.lineno(1))
 
     def p_assignment(self, p):
         """assignment : ID '=' expression ';' """

@@ -82,9 +82,10 @@ class PrintInstr(Node):
 
 
 class LabeledInstr(Node):
-    def __init__(self, id, instruction):
+    def __init__(self, id, instruction, line_no):
         self.id = id
         self.instruction = instruction
+        self.line_no = line_no
 
 
 class Assignment(Node):

@@ -4,12 +4,12 @@ import ast
 
 class NodeVisitor(object):
 
-    def visit(self, node):
+    def visit(self, node, data=None):
         method = 'visit_' + node.__class__.__name__
         visitor = getattr(self, method, self.generic_visit)
-        return visitor(node)
+        return visitor(node, data=data)
 
-    def generic_visit(self, node):        # Called if no explicit visitor function exists for a node.
+    def generic_visit(self, node, data):        # Called if no explicit visitor function exists for a node.
         if isinstance(node, list):
             for elem in node:
                 self.visit(elem)
@@ -34,6 +34,8 @@ class VariableDeclaration():
         self.column_no = column_no
 
     def __eq__(self, other):
+        if isinstance(other, UsedIdentifier):
+            return self.id == other.id
         return self.type == other.type and self.id == other.id
 
 
@@ -51,7 +53,7 @@ class FunctionDeclaration():
 
 
 class UsedIdentifier():
-    def __init__(self, id, line_no):
+    def __init__(self, id, line_no=None):
         self.id = id
         self.line_no = line_no
 
@@ -60,20 +62,16 @@ class UsedIdentifier():
 
 
 class TypeChecker(NodeVisitor):
-    def visit_Program(self, node):
-        declared = self.visit(node.declarations)
-        defined_functions = self.visit(node.fundefs)
-        used_identifiers = self.visit(node.instructions)
+    def visit_Program(self, node, data):
+        declared = self.visit(node.declarations, data)
+        defined_functions = self.visit(node.fundefs, [declared])
+        used_identifiers = self.visit(node.instructions, [declared, defined_functions])
 
-        for used_id in used_identifiers:
-            if used_id not in declared and used_id not in defined_functions:
-                print "ERROR: Line {0}: '{1}' not defined in current scope.".format(used_id.line_no, used_id.id)
-
-    def visit_Declarations(self, node):
+    def visit_Declarations(self, node, data):
         declared = []
 
         for declaration in node.declarations:
-            inits_list = self.visit(declaration)
+            inits_list = self.visit(declaration, [declared])
             for init in inits_list:
                 if init in declared:
                     prev_decl = declared[declared.index(init)]
@@ -82,12 +80,35 @@ class TypeChecker(NodeVisitor):
             declared.extend(inits_list)
         return declared
 
-    def visit_Declaration(self, node):
+    def visit_Declaration(self, node, data):
         inits_list = []
-        for init in self.visit(node.inits):
 
+        for init in self.visit(node.inits):
             if init.expression is not None:
-                self.visit(init.expression)
+                returned_type = self.visit(init.expression, data)
+                if isinstance(returned_type, UsedIdentifier):
+                    if data is not None:
+                        if returned_type not in data[0]:
+                            print "ERROR: Line {0}: '{1}' is not defined in current scope."\
+                                .format(init.line_no, returned_type.id)
+                            continue
+                        else:
+                            idx = data[0].index(returned_type)
+                            returned_type = (data[0])[idx].type
+
+                if returned_type is not None:
+                    var_type = node.type[0].upper() + node.type[1:]
+                    if var_type == 'Int':
+                        var_type = 'Integer'
+
+                    val_type = returned_type[0].upper() + returned_type[1:]
+                    if val_type == 'Int':
+                        val_type = 'Integer'
+
+                    if not (var_type == val_type or (var_type == 'Float' and val_type == 'Integer')):
+                        print "ERROR: Line {0}: Type mismatch '{1}' and '{2}'."\
+                            .format(init.line_no, var_type, val_type)
+                        continue
 
             # multiple declarations checking
             var_declaration = VariableDeclaration(type=node.type, id=init.id, line_no=init.line_no)
@@ -95,20 +116,46 @@ class TypeChecker(NodeVisitor):
 
         return inits_list
 
-    def visit_ConstExpression(self, node):
+    def visit_ConstExpression(self, node, data):
         return type(node.value).__name__
 
-    def visit_IdExpression(self, node):
-        # return VariableUsage(node.id)
-        pass
+    def visit_IdExpression(self, node, data):
+        return UsedIdentifier(node.id, node.line_no)
 
-    def visit_BinaryExpression(self, node):
-        left_result_type = self.visit(node.left)
-        right_result_type = self.visit(node.right)
+    def visit_BinaryExpression(self, node, data):
+        declared_variables = None
+        if data is not None:
+            declared_variables = data[0]
+
+        left_result_type = self.visit(node.left, data)
+        right_result_type = self.visit(node.right, data)
 
         # if error occurred in lower level, all expression is invalid, do not check it further
         if left_result_type is None or right_result_type is None:
             return None
+
+        if left_result_type is "NotDeclared" or right_result_type is "NotDeclared":
+            return "NotDeclared"
+
+        # if 'data' is None, that means no variables were declared so we are declaring them now (nothing != 0)
+        if data is not None:
+            if isinstance(left_result_type, UsedIdentifier):
+                try:
+                    variable_idx = declared_variables.index(left_result_type)
+                    left_result_type = declared_variables[variable_idx].type
+                except ValueError:
+                    print "ERROR: Line {0}: '{1}' is not declared in current scope."\
+                        .format(left_result_type.line_no, left_result_type.id)
+                    return "NotDeclared"
+
+            if isinstance(right_result_type, UsedIdentifier):
+                try:
+                    variable_idx = declared_variables.index(right_result_type)
+                    right_result_type = declared_variables[variable_idx].type
+                except ValueError:
+                    print "ERROR: Line {0}: '{1}' is not declared in current scope."\
+                          .format(right_result_type.line_no, right_result_type.id)
+                    return "NotDeclared"
 
         result_type = self.return_type(left_result_type, right_result_type, node.op)
         if result_type is None:
@@ -117,16 +164,16 @@ class TypeChecker(NodeVisitor):
 
         return result_type
 
-    def visit_InsideExpression(self, node):
-        return self.visit(node.expression)
+    def visit_InsideExpression(self, node, data):
+        return self.visit(node.expression, data)
 
-    def visit_Inits(self, node):
+    def visit_Inits(self, node, data):
         return node.inits
 
-    def visit_Fundefs(self, node):
+    def visit_Fundefs(self, node, data):
         declared = []
         for fundef in node.fundefs:
-            fundef = self.visit(fundef)
+            fundef = self.visit(fundef, data)
             if fundef in declared:
                 prev_decl = declared[declared.index(fundef)]
                 print "ERROR: Line {0}: Multiple declaration of function '{1}'. Previous declaration in line {2}."\
@@ -134,17 +181,17 @@ class TypeChecker(NodeVisitor):
             declared.append(fundef)
         return declared
 
-    def visit_Fundef(self, node):
+    def visit_Fundef(self, node, data):
         if type(node.args_list_or_empty) == ast.ArgsList:
             args_list = self.visit(node.args_list_or_empty)
         else:
             args_list = None
 
-        self.visit(node.compound_instr)
+        self.visit(node.compound_instr, data)
 
         return FunctionDeclaration(node.type, node.id, args_list=args_list, line_no=node.line_no)
 
-    def visit_ArgsList(self, node):
+    def visit_ArgsList(self, node, data):
         # check if arguments on list are unique
         unique_args = list(set(node.args_list))
         for arg in unique_args:
@@ -156,60 +203,72 @@ class TypeChecker(NodeVisitor):
         return node.args_list
 
     # instructions
-    def visit_Instructions(self, node):
-        used_identifiers = []
+    def visit_Instructions(self, node, data):
+        used_identifiers = []  # reduntant?
+
+        # if this happens it means code does not make sense
+        if data is None:
+            print "Too many errors"
+        declared_identifiers = data[0]
+
         for instruction in node.instructions:
-            ret_val = self.visit(instruction)
+            ret_val = self.visit(instruction, data)
+
+            # if instruction was expression that used identifiers
             if isinstance(ret_val, UsedIdentifier):
                 used_identifiers.append(ret_val)
+                if ret_val not in declared_identifiers:
+                    print "ERROR: Line {0}: '{1}' not defined in current scope.".format(ret_val.line_no, ret_val.id)
+            elif isinstance(ret_val, ast.LabeledInstr):
+                if UsedIdentifier(id=ret_val.id) in declared_identifiers:
+                    print "ERROR: Line {0}: Identifier '{1}' already in use.".format(ret_val.line_no, ret_val.id)
 
-        return used_identifiers
+    def visit_PrintInstr(self, node, data):
+        self.visit(node.expression, data)
 
-    def visit_PrintInstr(self, node):
-        self.visit(node.expression)
+    def visit_LabeledInstr(self, node, data):
+        self.visit(node.instruction, data)
+        return node
 
-    def visit_LabeledInstr(self, node):
-        # check id usage
-        self.visit(node.instruction)
+    def visit_Assignment(self, node, data):
+        self.visit(node.expression, data)
+        return self.visit(node.id, data)
 
-    def visit_Assignment(self, node):
-        self.visit(node.expression)
-        return UsedIdentifier(node.id.id, node.id.line_no)
-
-    def visit_ChoiceInstr(self, node):
+    def visit_ChoiceInstr(self, node, data):
         pass
 
-    def visit_WhileInstr(self, node):
+    def visit_WhileInstr(self, node, data):
+        self.visit(node.condition, data)
+        # print type(node.condition)
+
+    def visit_RepeatInstr(self, node, data):
         pass
 
-    def visit_RepeatInstr(self, node):
+    def visit_ReturnInstr(self, node, data):
         pass
 
-    def visit_ReturnInstr(self, node):
+    def visit_BreakInstr(sefl, node, data):
         pass
 
-    def visit_BreakInstr(sefl, node):
+    def visit_ContinueInstr(self, node, data):
         pass
 
-    def visit_ContinueInstr(self, node):
-        pass
-
-    def visit_CompoundInstr(self, node):
-        declared = self.visit(node.declarations)
-        used_identifiers = self.visit(node.instructions)
-
-        for used_id in used_identifiers:
-            if used_id not in declared:
-                print "ERROR: Line {0}: '{1}' not defined in current scope.".format(used_id.line_no, used_id.id)
+    def visit_CompoundInstr(self, node, data):
+        declared = self.visit(node.declarations, data)
+        # print "COPM {0}".format(declared)
+        used_identifiers = self.visit(node.instructions, [declared])
 
     # auxillary functions
     def return_type(self, left, right, operation):
+        left = left[0].upper() + left[1:]
+        right = right[0].upper() + right[1:]
+
         returned_type = {'Integer': {}, 'Float': {}, 'String': {}}
         for i in returned_type.keys():
             returned_type[i] = {}
             for j in returned_type.keys():
                 returned_type[i][j] = {}
-                for k in ['+', '-', '/', '*']:
+                for k in ['+', '-', '/', '*', '==', '>=', '<=', '!=']:
                     returned_type[i][j][k] = None
 
         returned_type['Integer']['Float']['+'] = 'Float'
@@ -230,5 +289,25 @@ class TypeChecker(NodeVisitor):
         returned_type['Integer']['Integer']['/'] = 'Integer'
         returned_type['Float']['Float']['/'] = 'Float'
         returned_type['Float']['Integer']['/'] = 'Float'
+        returned_type['Float']['Float']['=='] = 'Boolean'
+        returned_type['Integer']['Integer']['=='] = 'Boolean'
+        returned_type['String']['String']['=='] = 'Boolean'
+        returned_type['Float']['Float']['!='] = 'Boolean'
+        returned_type['Integer']['Integer']['!='] = 'Boolean'
+        returned_type['String']['String']['!='] = 'Boolean'
+        returned_type['Float']['Float']['>='] = 'Boolean'
+        returned_type['Integer']['Integer']['>='] = 'Boolean'
+        returned_type['String']['String']['>='] = 'Boolean'
+        returned_type['Float']['Float']['<='] = 'Boolean'
+        returned_type['Integer']['Integer']['<='] = 'Boolean'
+        returned_type['String']['String']['<='] = 'Boolean'
+        returned_type['Float']['Integer']['=='] = 'Boolean'
+        returned_type['Integer']['Float']['=='] = 'Boolean'
+        returned_type['Float']['Integer']['!='] = 'Boolean'
+        returned_type['Integer']['Float']['!='] = 'Boolean'
+        returned_type['Float']['Integer']['>='] = 'Boolean'
+        returned_type['Integer']['Float']['>='] = 'Boolean'
+        returned_type['Float']['Integer']['<='] = 'Boolean'
+        returned_type['Integer']['Float']['<='] = 'Boolean'
 
         return returned_type[left][right][operation]
