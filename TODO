@@ -1,0 +1,2 @@
+Problemy ze sledzeniem numeru linii w listach argumentow funkcji (zawsze zwraca 0)
+Zwracanie zawsze pierwszego wystapienia w przypadku redefinicji.

@@ -79,8 +79,12 @@ class Cparser(object):
             p[0] = ast.Inits(init=p[1])
 
     def p_init(self, p):
-        """init : ID '=' expression """
-        p[0] = ast.Init(p[1], p[3], line_no=p.lineno(2))
+        """init : ID '=' expression
+                | ID """
+        if len(p) == 2:
+            p[0] = ast.Init(id=p[1], line_no=p.lineno(1))
+        else:
+            p[0] = ast.Init(p[1], p[3], line_no=p.lineno(2))
 
     def p_instructions(self, p):
         """instructions : instructions instruction
@@ -115,7 +119,8 @@ class Cparser(object):
 
     def p_assignment(self, p):
         """assignment : ID '=' expression ';' """
-        p[0] = ast.Assignment(p[1], p[3])
+        id = ast.IdExpression(p[1], p.lineno(1))
+        p[0] = ast.Assignment(id, p[3])
 
     def p_choice_instr(self, p):
         """choice_instr : IF '(' condition ')' instruction  %prec IFX
@@ -197,7 +202,7 @@ class Cparser(object):
             if not isinstance(p[1], str):
                 p[0] = ast.ConstExpression(p[1])
             else:
-                p[0] = ast.IdExpression(p[1])
+                p[0] = ast.IdExpression(p[1], p.lineno(1))
         elif len(p) == 4:
             if p[1] == '(':
                 p[0] = ast.InsideExpression(p[2])
@@ -205,8 +210,6 @@ class Cparser(object):
                 p[0] = ast.BinaryExpression(p[1], p[2], p[3], p.lineno(2))
         else:
             p[0] = ast.FunctionExpression(p[1], p[3])
-
-
 
     def p_expr_list_or_empty(self, p):
         """expr_list_or_empty : expr_list
@@ -235,7 +238,7 @@ class Cparser(object):
 
     def p_fundef(self, p):
         """fundef : TYPE ID '(' args_list_or_empty ')' compound_instr """
-        p[0] = ast.Fundef(type=p[1], id=p[2], args_list_or_empty=p[4], compound_instr=p[6])
+        p[0] = ast.Fundef(type=p[1], id=p[2], args_list_or_empty=p[4], compound_instr=p[6], line_no=p.lineno(1))
 
 
     def p_args_list_or_empty(self, p):
@@ -250,9 +253,9 @@ class Cparser(object):
         """args_list : args_list ',' arg
                      | arg """
         if len(p) > 2:
-            p[0] = ast.ArgsList(p[1], p[3])
+            p[0] = ast.ArgsList(p[1], p[3], line_no=p.lineno(1))
         else:
-            p[0] = ast.ArgsList(arg=p[1])
+            p[0] = ast.ArgsList(arg=p[1], line_no=p.lineno(1))
 
     def p_arg(self, p):
         """arg : TYPE ID """

@@ -145,8 +145,9 @@ class ConstExpression(Expression):
 
 
 class IdExpression(Expression):
-    def __init__(self, id):
+    def __init__(self, id, line_no=None):
         self.id = id
+        self.line_no = line_no
 
 
 class BinaryExpression(Expression):
@@ -188,17 +189,20 @@ class Fundefs(Node):
 
 
 class Fundef(Node):
-    def __init__(self, type, id, args_list_or_empty, compound_instr):
+    def __init__(self, type, id, args_list_or_empty, compound_instr, line_no=None):
         self.type = type
         self.id = id
         self.args_list_or_empty = args_list_or_empty
         self.compound_instr = compound_instr
+        self.line_no = line_no
 
 
 class ArgsList(Node):
-    def __init__(self, args_list=None, arg=None):
+    def __init__(self, args_list=None, arg=None, line_no=None):
+        self.line_no = line_no
+
         self.args_list = []
-        if args_list is not None :
+        if args_list is not None:
             self.args_list = args_list.args_list
         if arg is not None:
             self.args_list.append(arg)
@@ -208,3 +212,9 @@ class Arg(Node):
     def __init__(self, type, id):
         self.type = type
         self.id = id
+
+    def __eq__(self, other):
+        return self.type == other.type and self.id == other.id
+
+    def __hash__(self):
+        return hash(self.type + self.id)

@@ -5,6 +5,9 @@ float a = 0;
 
 float sdasda(){
 	float abc = 0;
+    int fff;
+
+	fff = 0;
 	return abs;
 }
 
@@ -24,6 +27,14 @@ print res;
 return res;
 }
 
+float sdasda(){
+float abc = 0;
+	return abs;
+	}
+
 while(a >= b ) {
     a = 1/2*(a+b/a);
 }
+
+d = 7;
+ddd = 909;
