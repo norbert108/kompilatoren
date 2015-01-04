@@ -25,10 +25,14 @@ class Cparser(object):
 
     # check const type
     def is_int(self, arg):
+        print "isiint {0}".format(arg)
         try:
             int(arg)
-        except (ValueError, TypeError):
+        except (ValueError, TypeError) as e:
+            print e
+            print "ni  chuja"
             return False
+        print "taaa"
         return True
 
     def is_float(self, arg):
@@ -200,7 +204,15 @@ class Cparser(object):
                       | ID '(' error ')' """
         if len(p) == 2:
             if not isinstance(p[1], str):
-                p[0] = ast.ConstExpression(p[1])
+
+                # if self.is_int(p[1]):
+                #     const = ast.Integer(p[1])
+                # elif self.is_float(p[1]):
+                #     const = ast.Float(p[1])
+                # else:
+                #     const = ast.String(p[1])
+                p[0] = ast.ConstExpression(p[1], type(p[1]))
+                # print "GFGFG: {0}, {1}, {2}".format(type(const), const.value, p[1])
             else:
                 p[0] = ast.IdExpression(p[1], p.lineno(1))
         elif len(p) == 4:

@@ -141,8 +141,9 @@ class Expression(Node):
 
 
 class ConstExpression(Expression):
-    def __init__(self, value):
+    def __init__(self, value, type):
         self.value = value
+        self.type = type
 
 
 class IdExpression(Expression):
@@ -165,9 +166,10 @@ class InsideExpression(Expression):
 
 
 class FunctionExpression(Expression):
-    def __init__(self, id, expression):
+    def __init__(self, id, expression, line_no=None):
         self.id = id
         self.expression = expression
+        self.line_no = line_no
 
 
 class ExpressionList(Node):

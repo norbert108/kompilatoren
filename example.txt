@@ -15,9 +15,9 @@ int gcd(int m, int n) {
 int res = 0;
 if (m!=n) { 
     if (m > n) 
-        res = gcd(m-n, n);
+        res = bgc(2);
     else
-        res = gcd(n-m, m);
+        res = gcd(1, 4.4);
 }
 else
     res = m;
