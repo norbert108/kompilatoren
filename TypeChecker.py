@@ -291,11 +291,11 @@ class TypeChecker(NodeVisitor):
         local_variables = self.visit(node.declarations, data)
 
         # shadowing global variables
-        defined_variables = local_variables[:]
-        for local_variable in local_variables:
-            if local_variable in defined_variables:
-                def_var_idx = defined_variables.index(local_variable)
-                defined_variables[def_var_idx] = local_variable
+        # defined_variables = local_variables[:]
+        # for local_variable in local_variables:
+        #     if local_variable in defined_variables:
+        #         def_var_idx = defined_variables.index(local_variable)
+        #         defined_variables[def_var_idx] = local_variable
 
-        updated_data = [defined_variables, function_definitions]
+        updated_data = [local_variables, function_definitions]
         self.visit(node.instructions, updated_data)

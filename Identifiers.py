@@ -40,7 +40,7 @@ def result_type(left, right, operation):
     left = left[0].upper() + left[1:]
     right = right[0].upper() + right[1:]
 
-    returned_type = {'Integer': {}, 'Float': {}, 'String': {}}
+    returned_type = {'Integer': {}, 'Float': {}, 'String': {}, 'Boolean': {}}
     for i in returned_type.keys():
         returned_type[i] = {}
         for j in returned_type.keys():
@@ -91,5 +91,16 @@ def result_type(left, right, operation):
     returned_type['Integer']['Integer']['|'] = 'Integer'
     returned_type['Integer']['Integer']['&'] = 'Integer'
     returned_type['Integer']['Integer']['^'] = 'Integer'
+    returned_type['Integer']['Integer']['<'] = 'Boolean'
+    returned_type['Float']['Float']['<'] = 'Boolean'
+    returned_type['Float']['Integer']['<'] = 'Boolean'
+    returned_type['Integer']['Float']['<'] = 'Boolean'
+    returned_type['Boolean']['Boolean']['<'] = 'Boolean'
+    returned_type['Float']['Float']['>'] = 'Boolean'
+    returned_type['Float']['Integer']['>'] = 'Boolean'
+    returned_type['Integer']['Float']['>'] = 'Boolean'
+    returned_type['Boolean']['Boolean']['>'] = 'Boolean'
+    returned_type['Boolean']['Boolean']['&&'] = 'Boolean'
+    returned_type['Boolean']['Boolean']['||'] = 'Boolean'
 
     return returned_type[left][right][operation]

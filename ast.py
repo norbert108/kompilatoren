@@ -80,13 +80,16 @@ class String(Const):
 
 class Boolean(Const):
     def __init__(self, value):
-        self.value = value
+        self.value = bool(value)
 
     def __repr__(self):
         if self.value == 0:
             return "False"
         else:
             return "True"
+
+    def __str__(self):
+        return self.__repr__()
 
 
 # instructions

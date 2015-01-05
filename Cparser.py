@@ -127,7 +127,7 @@ class Cparser(object):
                         | IF '(' condition ')' instruction ELSE instruction
                         | IF '(' error ')' instruction  %prec IFX
                         | IF '(' error ')' instruction ELSE instruction """
-        if len(p) == 7:
+        if len(p) == 6:
             p[0] = ast.ChoiceInstr(condition=p[3], instruction=p[5])
         else:
             p[0] = ast.ChoiceInstr(condition=p[3], instruction=p[5], else_instruction=p[7])

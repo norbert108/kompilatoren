@@ -1,6 +1,8 @@
 
 float a = (2 - 1.1) + (2 + 1), b = ((15) * 3);
+int x = 0;
 string dd = "a" + "b";
+int d = 1 == 2;
 
 float sdasda(){
 	float abc = 0;
@@ -30,9 +32,13 @@ float abc = 0;
 	return abs;
 	}
 
-while(a >= b ) {
-    a = 1/2*(a+b/a);
+while((x <= 10) && (a < 20)) {
+    x = x + 1;
+    a = 2 * x;
+
+    if ( x == 7){
+        break;
+    }
 }
 
-d: d = 7;
 ddd = 909;

@@ -23,10 +23,7 @@ class MemoryStack:
 
     def get(self, name):
         stack_top = self.stack.pop()
-        try:
-            value = stack_top.get(name)
-        except IndexError:
-            return None
+        value = stack_top.get(name)
         self.stack.append(stack_top)
 
         return value
@@ -35,6 +32,18 @@ class MemoryStack:
     #     stack_top = self.stack.pop()
     #     stack_top.put(name, value)
     #     self.stack.append(stack_top)
+
+    def has_key(self, name):
+        try:
+            stack_top = self.stack.pop()
+        except IndexError:
+            return False
+
+        res = stack_top.has_key(name)
+        self.stack.append(stack_top)
+
+        self.stack.append(stack_top)
+        return res
 
     def set(self, name, value):
         stack_top = self.stack.pop()
