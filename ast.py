@@ -2,6 +2,9 @@ class Node(object):
     def __str__(self):
         return self.printTree(0)
 
+    def accept2(self, visitor, data=None):
+        return visitor.visit(self, data)
+
 
 # root node
 class Program(Node):
@@ -35,6 +38,9 @@ class Init(Node):
         self.line_no = line_no
         self.column_no = column_no
 
+    def accept2(self, visitor, data):
+        return visitor.visit(self, data)
+
 
 class Inits(Node):
     def __init__(self, inits=None, init=None):
@@ -49,7 +55,6 @@ class Inits(Node):
 class Const(Node):
     def __init__(self, value):
         self.value = value
-
 
 class Integer(Const):
     def __init__(self, value):
