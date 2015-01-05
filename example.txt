@@ -1,46 +1,18 @@
+int lol1 = 15;
+int lol2 = lol1 + 7;
 
-float a = (2 - 1.1) + (2 + 1), b = ((15) * 3);
-int x = 0;
-string dd = "a" + "b";
-int d = 1 == 2;
-
-float sdasda(){
-	float abc = 0;
-
-	fff = 0;
-	return abs;
-}
-
-int gcd(int m, int n) {
-
-int res = 0;
-if (m!=n) { 
-    if (m > n) 
-        res = bgc(2);
-    else
-        res = gcd(1, 4.4);
-}
-else
-    res = m;
-
-print res;
-return res;
-}
-
-float sdasda(){
-float abc = 0;
-	return abs;
-	}
-
-while((x <= 10) && (a < 20)) {
-    x = x + 1;
-    a = 2 * x;
-
-    if ( x == 7){
-        break;
+int trololo(int a, int b){
+    while(a < b){
+        a = a + 1;
     }
 
-    print 2 <= 4;
+    return a + b;
 }
 
-ddd = 909;
+float lol(int niefloat){
+    int f = trololo(1, 2);
+    print f;
+    return trololo(niefloat, 17) * 0.1;
+}
+
+print lol(4);

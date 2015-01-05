@@ -2,8 +2,8 @@ class Node(object):
     def __str__(self):
         return self.printTree(0)
 
-    def accept2(self, visitor, data=None):
-        return visitor.visit(self, data)
+    def accept2(self, visitor):
+        return visitor.visit(self)
 
 
 # root node

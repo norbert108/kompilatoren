@@ -1,6 +1,5 @@
-import ast
+import AST
 from Identifiers import *
-
 
 class NodeVisitor(object):
 
@@ -17,9 +16,9 @@ class NodeVisitor(object):
             for child in node.children:
                 if isinstance(child, list):
                     for item in child:
-                        if isinstance(item, ast.Node):
+                        if isinstance(item, AST.Node):
                             self.visit(item)
-                elif isinstance(child, ast.Node):
+                elif isinstance(child, AST.Node):
                     self.visit(child)
 
 
@@ -159,11 +158,11 @@ class TypeChecker(NodeVisitor):
         param_type = ""
         last_arg_no = 0
         for i in xrange(len(data)):
-            if type(node.expr_list[i].value) == ast.Integer:
+            if type(node.expr_list[i].value) == AST.Integer:
                 param_type = "int"
-            elif type(node.expr_list[i].value) == ast.Float:
+            elif type(node.expr_list[i].value) == AST.Float:
                 param_type = "float"
-            elif type(node.expr_list[i].value) == ast.String:
+            elif type(node.expr_list[i].value) == AST.String:
                 param_type = "string"
 
             if param_type != data[i].type:
@@ -202,7 +201,7 @@ class TypeChecker(NodeVisitor):
         return declared
 
     def visit_Fundef(self, node, data):
-        if type(node.args_list_or_empty) == ast.ArgsList:
+        if type(node.args_list_or_empty) == AST.ArgsList:
             args_list = self.visit(node.args_list_or_empty)
         else:
             args_list = None
@@ -245,7 +244,7 @@ class TypeChecker(NodeVisitor):
                 used_identifiers.append(ret_val)
                 if ret_val not in declared_identifiers:
                     print "Line {0}: '{1}' not defined in current scope.".format(ret_val.line_no, ret_val.id)
-            elif isinstance(ret_val, ast.LabeledInstr):
+            elif isinstance(ret_val, AST.LabeledInstr):
                 if UsedIdentifier(id=ret_val.id) in declared_identifiers:
                     print "Line {0}: Identifier '{1}' already in use.".format(ret_val.line_no, ret_val.id)
 
@@ -289,13 +288,6 @@ class TypeChecker(NodeVisitor):
             function_definitions = data[1]
 
         local_variables = self.visit(node.declarations, data)
-
-        # shadowing global variables
-        # defined_variables = local_variables[:]
-        # for local_variable in local_variables:
-        #     if local_variable in defined_variables:
-        #         def_var_idx = defined_variables.index(local_variable)
-        #         defined_variables[def_var_idx] = local_variable
 
         updated_data = [local_variables, function_definitions]
         self.visit(node.instructions, updated_data)

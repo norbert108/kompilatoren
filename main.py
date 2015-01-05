@@ -18,17 +18,7 @@ if __name__ == '__main__':
     Cparser = Cparser()
     parser = yacc.yacc(module=Cparser)
     text = file.read()
-    # parser.parse(text, lexer=Cparser.scanner)
 
-    ast = parser.parse(text, lexer=Cparser.scanner)
-    # ast.accept2(TypeChecker())
-
-    # jesli wizytor TypeChecker z implementacji w poprzednim lab korzystal z funkcji accept
-    # to nazwa tej ostatniej dla Interpretera powinna zostac zmieniona, np. na accept2 ( ast.accept2(Interpreter()) )
-    # tak aby rozne funkcje accept z roznych implementacji wizytorow nie kolidowaly ze soba
-    ast.accept2(Interpreter())
-
-    # in future
-    # ast.accept(OptimizationPass1())
-    # ast.accept(OptimizationPass2())
-    # ast.accept(CodeGenerator())
+    ast = parser.parse(text, lexer=Cparser.scanner)  # parser
+    # ast.accept2(TypeChecker())                     # lexer
+    ast.accept2(Interpreter())                       # interpreter
