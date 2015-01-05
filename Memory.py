@@ -1,36 +1,49 @@
 
 class Memory:
 
-    def __init__(self, name): # memory name
-        pass
+    def __init__(self):
+        self.variables = {}
 
-    def has_key(self, name):  # variable name
-        pass
+    def has_key(self, name):
+        return name in self.variables.keys()
 
-    def get(self, name):         # get from memory current value of variable <name>
-        pass
+    def get(self, name):
+        return self.variables.get(name)
 
-    def put(self, name, value):  # puts into memory current value of variable <name>
-        pass
+    def put(self, name, value):
+        self.variables[name] = value
 
 
 class MemoryStack:
                                                                              
-    def __init__(self, memory=None): # initialize memory stack with memory <memory>
-        pass
+    def __init__(self, memory=None):
+        self.stack = []
+        if memory is not None:
+            self.stack.append(memory)
 
-    def get(self, name):             # get from memory stack current value of variable <name>
-        pass
+    def get(self, name):
+        stack_top = self.stack.pop()
+        try:
+            value = stack_top.get(name)
+        except IndexError:
+            return None
+        self.stack.append(stack_top)
 
-    def insert(self, name, value): # inserts into memory stack variable <name> with value <value>
-        pass
+        return value
 
-    def set(self, name, value): # sets variable <name> to value <value>
-        pass
+    # def insert(self, name, value):
+    #     stack_top = self.stack.pop()
+    #     stack_top.put(name, value)
+    #     self.stack.append(stack_top)
 
-    def push(self, memory): # push memory <memory> onto the stack
-        pass
+    def set(self, name, value):
+        stack_top = self.stack.pop()
+        stack_top.put(name, value)
+        self.stack.append(stack_top)
 
-    def pop(self):          # pops the top memory from the stack
-        pass
+    def push(self, memory):
+        self.stack.append(memory)
+
+    def pop(self):
+        return self.stack.pop()
 

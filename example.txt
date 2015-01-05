@@ -1,7 +1,6 @@
 
-float a = (2 * (2 + ("xD" * "Dx"))) + 2, c = 0, d;
-int dupa = 0;
-string b = dupa;
+float a = (2 - 1.1) + (2 + 1), b = ((15) * 3);
+string dd = "a" + "b";
 
 float sdasda(){
 	float abc = 0;

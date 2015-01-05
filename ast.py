@@ -38,9 +38,6 @@ class Init(Node):
         self.line_no = line_no
         self.column_no = column_no
 
-    def accept2(self, visitor, data):
-        return visitor.visit(self, data)
-
 
 class Inits(Node):
     def __init__(self, inits=None, init=None):
@@ -56,19 +53,40 @@ class Const(Node):
     def __init__(self, value):
         self.value = value
 
+
 class Integer(Const):
     def __init__(self, value):
-        self.value = value
+        self.value = int(value)
+
+    def __repr__(self):
+        return str(self.value)
 
 
 class Float(Const):
     def __init__(self, value):
-        self.value = value
+        self.value = float(value)
+
+    def __repr__(self):
+        return str(self.value)
 
 
 class String(Const):
     def __init__(self, value):
         self.value = value
+
+    def __repr__(self):
+        return self.value
+
+
+class Boolean(Const):
+    def __init__(self, value):
+        self.value = value
+
+    def __repr__(self):
+        if self.value == 0:
+            return "False"
+        else:
+            return "True"
 
 
 # instructions
@@ -146,9 +164,15 @@ class Expression(Node):
 
 
 class ConstExpression(Expression):
-    def __init__(self, value, type):
+    def __init__(self, value, type, line_no=None):
         self.value = value
         self.type = type
+        if type == 'Int':
+            self.type = 'Integer'
+        self.line_no = line_no
+
+    def __repr__(self):
+        return str(self.value)
 
 
 class IdExpression(Expression):

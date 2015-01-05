@@ -1,4 +1,5 @@
 import ast
+from Identifiers import *
 
 
 class NodeVisitor(object):
@@ -20,44 +21,6 @@ class NodeVisitor(object):
                             self.visit(item)
                 elif isinstance(child, ast.Node):
                     self.visit(child)
-
-
-# aux classes used for redefining equality operators...
-class VariableDeclaration():
-    '''docstring hir'''
-
-    def __init__(self, type, id, line_no=None, column_no=None):
-        self.type = type
-        self.id = id
-        self.line_no = line_no
-        self.column_no = column_no
-
-    def __eq__(self, other):
-        if isinstance(other, UsedIdentifier):
-            return self.id == other.id
-        return self.type == other.type and self.id == other.id
-
-
-class FunctionDeclaration():
-    ''' j.w. '''
-
-    def __init__(self, type, id, args_list, line_no=None):
-        self.type = type
-        self.id = id
-        self.args_list = args_list
-        self.line_no = line_no
-
-    def __eq__(self, other):
-        return self.type == other.type and self.id == other.id and self.args_list == other.args_list
-
-
-class UsedIdentifier():
-    def __init__(self, id, line_no=None):
-        self.id = id
-        self.line_no = line_no
-
-    def __eq__(self, other):
-        return self.id == other.id
 
 
 class TypeChecker(NodeVisitor):
@@ -156,12 +119,12 @@ class TypeChecker(NodeVisitor):
                           .format(right_result_type.line_no, right_result_type.id)
                     return "NotDeclared"
 
-        result_type = self.return_type(left_result_type, right_result_type, node.op)
-        if result_type is None:
+        res_type = result_type(left_result_type, right_result_type, node.op)
+        if res_type is None:
             print "Line {0}: Argument types '{1}' and '{2}' are invalid for operation '{3}'"\
                 .format(node.line_no, left_result_type, right_result_type, node.op)
 
-        return result_type
+        return res_type
 
     def visit_FunctionExpression(self, node, data):
         if UsedIdentifier(node.id) not in data[1]:
@@ -336,56 +299,3 @@ class TypeChecker(NodeVisitor):
 
         updated_data = [defined_variables, function_definitions]
         self.visit(node.instructions, updated_data)
-
-    def return_type(self, left, right, operation):
-        left = left[0].upper() + left[1:]
-        right = right[0].upper() + right[1:]
-
-        returned_type = {'Integer': {}, 'Float': {}, 'String': {}}
-        for i in returned_type.keys():
-            returned_type[i] = {}
-            for j in returned_type.keys():
-                returned_type[i][j] = {}
-                for k in ['+', '-', '/', '*', '==', '>=', '<=', '!=']:
-                    returned_type[i][j][k] = None
-
-        returned_type['Integer']['Float']['+'] = 'Float'
-        returned_type['Integer']['Integer']['+'] = 'Integer'
-        returned_type['Float']['Float']['+'] = 'Float'
-        returned_type['Float']['Integer']['+'] = 'Float'
-        returned_type['String']['String']['+'] = 'String'
-        returned_type['Integer']['Float']['-'] = 'Float'
-        returned_type['Integer']['Integer']['-'] = 'Integer'
-        returned_type['Float']['Float']['-'] = 'Float'
-        returned_type['Float']['Integer']['-'] = 'Float'
-        returned_type['Integer']['Float']['*'] = 'Float'
-        returned_type['Integer']['Integer']['*'] = 'Integer'
-        returned_type['Float']['Float']['*'] = 'Float'
-        returned_type['Float']['Integer']['*'] = 'Float'
-        returned_type['String']['Integer']['*'] = 'String'
-        returned_type['Integer']['Float']['/'] = 'Float'
-        returned_type['Integer']['Integer']['/'] = 'Integer'
-        returned_type['Float']['Float']['/'] = 'Float'
-        returned_type['Float']['Integer']['/'] = 'Float'
-        returned_type['Float']['Float']['=='] = 'Boolean'
-        returned_type['Integer']['Integer']['=='] = 'Boolean'
-        returned_type['String']['String']['=='] = 'Boolean'
-        returned_type['Float']['Float']['!='] = 'Boolean'
-        returned_type['Integer']['Integer']['!='] = 'Boolean'
-        returned_type['String']['String']['!='] = 'Boolean'
-        returned_type['Float']['Float']['>='] = 'Boolean'
-        returned_type['Integer']['Integer']['>='] = 'Boolean'
-        returned_type['String']['String']['>='] = 'Boolean'
-        returned_type['Float']['Float']['<='] = 'Boolean'
-        returned_type['Integer']['Integer']['<='] = 'Boolean'
-        returned_type['String']['String']['<='] = 'Boolean'
-        returned_type['Float']['Integer']['=='] = 'Boolean'
-        returned_type['Integer']['Float']['=='] = 'Boolean'
-        returned_type['Float']['Integer']['!='] = 'Boolean'
-        returned_type['Integer']['Float']['!='] = 'Boolean'
-        returned_type['Float']['Integer']['>='] = 'Boolean'
-        returned_type['Integer']['Float']['>='] = 'Boolean'
-        returned_type['Float']['Integer']['<='] = 'Boolean'
-        returned_type['Integer']['Float']['<='] = 'Boolean'
-
-        return returned_type[left][right][operation]

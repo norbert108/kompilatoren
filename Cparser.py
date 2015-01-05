@@ -200,7 +200,7 @@ class Cparser(object):
                       | ID '(' error ')' """
         if len(p) == 2:
             if not isinstance(p[1], str):
-                p[0] = ast.ConstExpression(p[1], type(p[1]))
+                p[0] = ast.ConstExpression(p[1], type(p[1]), p.lineno(1))
             else:
                 p[0] = ast.IdExpression(p[1], p.lineno(1))
         elif len(p) == 4:
