@@ -39,6 +39,8 @@ while((x <= 10) && (a < 20)) {
     if ( x == 7){
         break;
     }
+
+    print 2 <= 4;
 }
 
 ddd = 909;
