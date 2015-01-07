@@ -108,5 +108,9 @@ def result_type(left, right, operation):
     returned_type['Boolean']['Boolean']['>'] = 'Boolean'
     returned_type['Boolean']['Boolean']['&&'] = 'Boolean'
     returned_type['Boolean']['Boolean']['||'] = 'Boolean'
+    returned_type['Integer']['Integer']['%'] = 'Integer'
+    returned_type['Integer']['Float']['%'] = 'Integer'
+    returned_type['Float']['Integer']['%'] = 'Integer'
+    returned_type['Float']['Float']['%'] = 'Integer'
 
     return returned_type[left][right][operation]

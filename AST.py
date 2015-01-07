@@ -53,13 +53,15 @@ class Const(Node):
     def __init__(self, value):
         self.value = value
 
+    def __repr__(self):
+        return str(self.value)
+    #
+    # def __str__(self):
+    #     return self.__repr__()
 
 class Integer(Const):
     def __init__(self, value):
         self.value = int(value)
-
-    def __repr__(self):
-        return str(self.value)
 
 
 class Float(Const):

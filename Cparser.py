@@ -209,7 +209,7 @@ class Cparser(object):
             else:
                 p[0] = AST.BinaryExpression(p[1], p[2], p[3], p.lineno(2))
         else:
-            p[0] = AST.FunctionExpression(p[1], p[3])
+            p[0] = AST.FunctionExpression(p[1], p[3], p.lineno(1))
 
     def p_expr_list_or_empty(self, p):
         """expr_list_or_empty : expr_list

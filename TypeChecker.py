@@ -23,21 +23,27 @@ class NodeVisitor(object):
 
 
 class TypeChecker(NodeVisitor):
+
+    def __init__(self):
+        self.errors = 0
+
     def visit_Program(self, node, data):
-        declared = self.visit(node.declarations, data)
-        defined_functions = self.visit(node.fundefs, [declared])
+        declared = self.visit(node.declarations, [[], []])
+        defined_functions = self.visit(node.fundefs, [declared, []])
         self.visit(node.instructions, [declared, defined_functions])
+        return self.errors
 
     def visit_Declarations(self, node, data):
         declared = []
 
         for declaration in node.declarations:
-            inits_list = self.visit(declaration, [declared])
+            inits_list = self.visit(declaration, [data[0] + declared, data[1]])
             for init in inits_list:
                 if init in declared:
                     prev_decl = declared[declared.index(init)]
                     print "Line {0}: '{1}' redefined. Previous declaration in line {2}."\
                         .format(init.line_no, init.id, prev_decl.line_no)
+                    self.errors += 1
             declared.extend(inits_list)
         return declared
 
@@ -52,6 +58,7 @@ class TypeChecker(NodeVisitor):
                         if returned_type not in data[0]:
                             print "Line {0}: '{1}' is not defined in current scope."\
                                 .format(init.line_no, returned_type.id)
+                            self.errors += 1
                             continue
                         else:
                             idx = data[0].index(returned_type)
@@ -69,6 +76,7 @@ class TypeChecker(NodeVisitor):
                     if not (var_type == val_type or (var_type == 'Float' and val_type == 'Integer')):
                         print "ERROR: Line {0}: Type mismatch '{1}' and '{2}'."\
                             .format(init.line_no, var_type, val_type)
+                        self.errors += 1
                         continue
 
             # multiple declarations checking
@@ -107,6 +115,7 @@ class TypeChecker(NodeVisitor):
                 except ValueError:
                     print "Line {0}: '{1}' is not declared in current scope."\
                         .format(left_result_type.line_no, left_result_type.id)
+                    self.errors += 1
                     return "NotDeclared"
 
             if isinstance(right_result_type, UsedIdentifier):
@@ -116,12 +125,14 @@ class TypeChecker(NodeVisitor):
                 except ValueError:
                     print "Line {0}: '{1}' is not declared in current scope."\
                           .format(right_result_type.line_no, right_result_type.id)
+                    self.errors += 1
                     return "NotDeclared"
 
         res_type = result_type(left_result_type, right_result_type, node.op)
         if res_type is None:
             print "Line {0}: Argument types '{1}' and '{2}' are invalid for operation '{3}'"\
                 .format(node.line_no, left_result_type, right_result_type, node.op)
+            self.errors += 1
 
         return res_type
 
@@ -129,6 +140,7 @@ class TypeChecker(NodeVisitor):
         if UsedIdentifier(node.id) not in data[1]:
             print "Line {0}: Function '{1}' is not defined." \
                 .format(node.line_no, node.id)
+            # self.errors += 1
             return
 
         possible_candidates = []
@@ -153,11 +165,19 @@ class TypeChecker(NodeVisitor):
                     print ",",
                 print "{0}".format(param.type),
             print ")"
+        self.errors += 1
 
     def visit_ExpressionList(self, node, data):
         param_type = ""
         last_arg_no = 0
         for i in xrange(len(data)):
+            if type(node.expr_list[i]) == AST.BinaryExpression or\
+                            type(node.expr_list[i]) == AST.IdExpression or\
+                            type(node.expr_list[i]) == AST.InsideExpression or\
+                            type(node.expr_list[i]) == AST.FunctionExpression:
+                last_arg_no += 1
+                continue
+
             if type(node.expr_list[i].value) == AST.Integer:
                 param_type = "int"
             elif type(node.expr_list[i].value) == AST.Float:
@@ -197,21 +217,28 @@ class TypeChecker(NodeVisitor):
                 prev_decl = declared[declared.index(fundef)]
                 print "Line {0}: Multiple declaration of function '{1}'. Previous declaration in line {2}."\
                     .format(fundef.line_no, fundef.id, prev_decl.line_no)
+                self.errors += 1
             declared.append(fundef)
         return declared
 
     def visit_Fundef(self, node, data):
+
+        updated_locals = (data[0])[:]
         if type(node.args_list_or_empty) == AST.ArgsList:
-            args_list = self.visit(node.args_list_or_empty)
+            args_list = self.visit(node.args_list_or_empty, data)
+            for arg in args_list:
+                updated_locals.append(VariableDeclaration(arg.type, arg.id))
         else:
             args_list = None
+
+        # print "upd locals {0}".format(updated_locals[0])
 
         declared_functions = []
         if data is not None and len(data) > 1:
             declared_functions = (data[1])[:]
         declared_functions.append(FunctionDeclaration(node.type, node.id, args_list=args_list, line_no=node.line_no))
 
-        updated_data = [data[0], declared_functions]
+        updated_data = [updated_locals, declared_functions]
         self.visit(node.compound_instr, updated_data)
 
         return FunctionDeclaration(node.type, node.id, args_list=args_list, line_no=node.line_no)
@@ -224,6 +251,7 @@ class TypeChecker(NodeVisitor):
             if len(indices) > 1:
                 print "Line {0}: Multiple definition of argument '{1} {2}'."\
                     .format(node.line_no, arg.type, arg.id)
+                self.errors += 1
 
         return node.args_list
 
@@ -244,9 +272,11 @@ class TypeChecker(NodeVisitor):
                 used_identifiers.append(ret_val)
                 if ret_val not in declared_identifiers:
                     print "Line {0}: '{1}' not defined in current scope.".format(ret_val.line_no, ret_val.id)
+                    self.errors += 1
             elif isinstance(ret_val, AST.LabeledInstr):
                 if UsedIdentifier(id=ret_val.id) in declared_identifiers:
                     print "Line {0}: Identifier '{1}' already in use.".format(ret_val.line_no, ret_val.id)
+                    self.errors += 1
 
     def visit_PrintInstr(self, node, data):
         self.visit(node.expression, data)
@@ -288,6 +318,7 @@ class TypeChecker(NodeVisitor):
             function_definitions = data[1]
 
         local_variables = self.visit(node.declarations, data)
+        all_locals = data[0] + local_variables
 
-        updated_data = [local_variables, function_definitions]
+        updated_data = [all_locals, function_definitions]
         self.visit(node.instructions, updated_data)

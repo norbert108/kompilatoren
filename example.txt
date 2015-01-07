@@ -1,18 +1,31 @@
-int lol1 = 15;
-int lol2 = lol1 + 7;
+int a = 0;
 
-int trololo(int a, int b){
-    while(a < b){
-        a = a + 1;
-    }
-
-    return a + b;
+string greet(string name)
+{
+    string str = "Hey, " + name;
+    return str;
 }
 
-float lol(int niefloat){
-    int f = trololo(1, 2);
-    print f;
-    return trololo(niefloat, 17) * 0.1;
+string greetMe()
+{
+    string t = greet("you");
+    return t;
 }
 
-print lol(4);
+
+int inc(int n)
+{
+int l = n + 1;
+    return l;
+}
+
+int inc5(int n) {
+    int a = 0;
+    return 1;
+}
+
+print greet("you");  
+print greetMe();
+print inc(1);
+print inc5(10);
+

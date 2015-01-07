@@ -114,7 +114,7 @@ class TreePrinter:
     @addToClass(AST.Assignment)
     def printTree(self, level):
         tree = addLevel(level)+"=\n"
-        tree += addLevel(level+1)+self.id+"\n"
+        tree += "{0}{1}\n".format(addLevel(level+1), self.id)
         tree += self.expression.printTree(level+1)
         return tree
 
@@ -208,15 +208,16 @@ class TreePrinter:
 
     @addToClass(AST.Integer)
     def printTree(self, level):
-        tree = addLevel(level)+self.value+"\n"
+        # print "VAL {0} {1} {2} {3}".format(type(self.value), self.value, type(level), level)
+        tree = "{0}{1}\n".format(addLevel(level), self.value)
         return tree
 
     @addToClass(AST.Float)
     def printTree(self, level):
-        tree = addLevel(level)+self.value+"\n"
+        tree = "{0}{1}\n".format(addLevel(level), self.value)
         return tree
 
     @addToClass(AST.String)
     def printTree(self, level):
-        tree = addLevel(level)+self.value+"\n"
+        tree = "{0}{1}\n".format(addLevel(level), self.value)
         return tree
